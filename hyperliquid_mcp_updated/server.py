@@ -10,6 +10,7 @@ from typing import Any
 
 from hyperliquid.info import Info
 from hyperliquid.utils import constants
+from hyperliquid.utils.types import Cloid
 from mcp.server.fastmcp import FastMCP
 
 logger = logging.getLogger(__name__)
@@ -17,10 +18,9 @@ logger = logging.getLogger(__name__)
 mcp = FastMCP(
     "hyperliquid-mcp-updated",
     instructions=(
-        "Hyperliquid Info API tools. All calls are read-only HTTP to Hyperliquid. "
-        "Use hl_clearinghouse_state / hl_open_orders / hl_user_fills_by_time / "
-        "hl_user_funding_history / hl_portfolio / hl_user_vault_equities for address research. "
-        "Times are Unix milliseconds. No private key required."
+        "Hyperliquid Info API tools: one tool per hyperliquid.info.Info HTTP method "
+        "(clearinghouse, fills, funding, portfolio, meta, spot, staking, orders, etc.) "
+        "plus hl_info_request for raw POST /info. Read-only; times are Unix ms; no private key."
     ),
 )
 
@@ -46,6 +46,12 @@ def _json_text(data: Any) -> str:
 def hl_clearinghouse_state(user: str, dex: str = "") -> str:
     """Perpetual clearinghouse state: positions, margin summary, withdrawable (clearinghouseState)."""
     return _json_text(_info().user_state(user, dex=dex))
+
+
+@mcp.tool()
+def hl_spot_clearinghouse_state(user: str) -> str:
+    """Spot clearinghouse balances (spotClearinghouseState)."""
+    return _json_text(_info().spot_user_state(user))
 
 
 @mcp.tool()
@@ -137,6 +143,30 @@ def hl_meta(dex: str = "") -> str:
 
 
 @mcp.tool()
+def hl_meta_and_asset_ctxs() -> str:
+    """Perp meta plus per-asset mark/oracle/funding/OI context (metaAndAssetCtxs)."""
+    return _json_text(_info().meta_and_asset_ctxs())
+
+
+@mcp.tool()
+def hl_perp_dexs() -> str:
+    """List perp dex deployments (perpDexs)."""
+    return _json_text(_info().perp_dexs())
+
+
+@mcp.tool()
+def hl_spot_meta() -> str:
+    """Spot pair metadata (spotMeta)."""
+    return _json_text(_info().spot_meta())
+
+
+@mcp.tool()
+def hl_spot_meta_and_asset_ctxs() -> str:
+    """Spot meta plus asset contexts (spotMetaAndAssetCtxs)."""
+    return _json_text(_info().spot_meta_and_asset_ctxs())
+
+
+@mcp.tool()
 def hl_all_mids(dex: str = "") -> str:
     """Mid prices for all assets (allMids)."""
     return _json_text(_info().all_mids(dex=dex))
@@ -160,6 +190,108 @@ def hl_candles(coin: str, interval: str, start_time_ms: int, end_time_ms: int) -
 def hl_funding_history(coin: str, start_time_ms: int, end_time_ms: int | None = None) -> str:
     """Historical funding rates for a perp coin (not user-specific)."""
     return _json_text(_info().funding_history(coin, start_time_ms, endTime=end_time_ms))
+
+
+@mcp.tool()
+def hl_user_fees(user: str) -> str:
+    """User fee tier and daily volume stats (userFees)."""
+    return _json_text(_info().user_fees(user))
+
+
+@mcp.tool()
+def hl_user_staking_summary(user: str) -> str:
+    """Staking summary for user (delegatorSummary)."""
+    return _json_text(_info().user_staking_summary(user))
+
+
+@mcp.tool()
+def hl_user_staking_delegations(user: str) -> str:
+    """Active staking delegations (delegations)."""
+    return _json_text(_info().user_staking_delegations(user))
+
+
+@mcp.tool()
+def hl_user_staking_rewards(user: str) -> str:
+    """Staking reward history (delegatorRewards)."""
+    return _json_text(_info().user_staking_rewards(user))
+
+
+@mcp.tool()
+def hl_delegator_history(user: str) -> str:
+    """Delegate / undelegate history (delegatorHistory)."""
+    return _json_text(_info().delegator_history(user))
+
+
+@mcp.tool()
+def hl_order_status_by_oid(user: str, oid: int) -> str:
+    """Order status by numeric order id (orderStatus)."""
+    return _json_text(_info().query_order_by_oid(user, oid))
+
+
+@mcp.tool()
+def hl_order_status_by_cloid(user: str, cloid_hex: str) -> str:
+    """Order status by client order id: 0x + 32 hex chars (16 bytes) (orderStatus)."""
+    return _json_text(_info().query_order_by_cloid(user, Cloid.from_str(cloid_hex)))
+
+
+@mcp.tool()
+def hl_referral_state(user: str) -> str:
+    """Referral program state (referral)."""
+    return _json_text(_info().query_referral_state(user))
+
+
+@mcp.tool()
+def hl_sub_accounts(user: str) -> str:
+    """Sub-accounts for master (subAccounts)."""
+    return _json_text(_info().query_sub_accounts(user))
+
+
+@mcp.tool()
+def hl_user_to_multi_sig_signers(multi_sig_user: str) -> str:
+    """Multi-sig signers for address (userToMultiSigSigners)."""
+    return _json_text(_info().query_user_to_multi_sig_signers(multi_sig_user))
+
+
+@mcp.tool()
+def hl_perp_deploy_auction_status() -> str:
+    """Perp deploy auction status (perpDeployAuctionStatus)."""
+    return _json_text(_info().query_perp_deploy_auction_status())
+
+
+@mcp.tool()
+def hl_user_dex_abstraction(user: str) -> str:
+    """HIP-3 dex abstraction state (userDexAbstraction)."""
+    return _json_text(_info().query_user_dex_abstraction_state(user))
+
+
+@mcp.tool()
+def hl_user_abstraction(user: str) -> str:
+    """Unified account / portfolio margin abstraction (userAbstraction)."""
+    return _json_text(_info().query_user_abstraction_state(user))
+
+
+@mcp.tool()
+def hl_user_twap_slice_fills(user: str) -> str:
+    """Recent TWAP slice fills (userTwapSliceFills)."""
+    return _json_text(_info().user_twap_slice_fills(user))
+
+
+@mcp.tool()
+def hl_user_rate_limit(user: str) -> str:
+    """User API rate limit info (userRateLimit)."""
+    return _json_text(_info().user_rate_limit(user))
+
+
+@mcp.tool()
+def hl_spot_deploy_auction_status(user: str) -> str:
+    """Spot deploy auction status for user (spotDeployState)."""
+    return _json_text(_info().query_spot_deploy_auction_status(user))
+
+
+@mcp.tool()
+def hl_extra_agents(user: str) -> str:
+    """Extra API agents linked to user (extraAgents)."""
+    return _json_text(_info().extra_agents(user))
 
 
 @mcp.tool()
