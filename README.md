@@ -109,6 +109,8 @@ After editing, reload MCP in Cursor settings.
 | `hl_l2_book` | `l2_snapshot` |
 | `hl_candles` | `candles_snapshot` |
 | `hl_funding_history` | `funding_history` |
+| `hl_predicted_fundings` | *(no SDK method)* → `post(..., {"type":"predictedFundings"})` |
+| `hl_active_asset_data` | *(no SDK method)* → `post(..., {"type":"activeAssetData", ...})` |
 | `hl_info_request` | raw `post("/info", {**payload, "type": request_type})` |
 
 ## Publish to GitHub

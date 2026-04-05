@@ -193,6 +193,18 @@ def hl_funding_history(coin: str, start_time_ms: int, end_time_ms: int | None = 
 
 
 @mcp.tool()
+def hl_predicted_fundings() -> str:
+    """Predicted funding across venues (HlPerp / BinPerp / BybitPerp) — same idea as Funding Comparison UI (predictedFundings)."""
+    return _json_text(_info().post("/info", {"type": "predictedFundings"}))
+
+
+@mcp.tool()
+def hl_active_asset_data(user: str, coin: str) -> str:
+    """Per-user per-coin leverage, max trade sizes, available to trade (activeAssetData). Official HTTP Info; SDK exposes mainly via WS."""
+    return _json_text(_info().post("/info", {"type": "activeAssetData", "user": user, "coin": coin}))
+
+
+@mcp.tool()
 def hl_user_fees(user: str) -> str:
     """User fee tier and daily volume stats (userFees)."""
     return _json_text(_info().user_fees(user))

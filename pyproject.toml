@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hyperliquid-mcp-updated"
-version = "0.2.0"
+version = "0.2.1"
 description = "MCP server for Hyperliquid Info API, aligned with hyperliquid-python-sdk"
 readme = "README.md"
 license = "MIT"
